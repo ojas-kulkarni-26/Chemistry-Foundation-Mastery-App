@@ -24,12 +24,12 @@ window.ChemEquation = (function() {
       el.innerHTML = `
         <div class="empty-state">
           <div class="icon">⚡</div>
+          <p style="font-weight:600;color:var(--text);margin-bottom:4px">Equation Writing</p>
           <p>Build chemical equations by tapping formula tokens.<br>From simple to complex word problems.</p>
-          <br>
-          <button id="equation-start" class="btn btn-primary btn-block">Start Practice</button>
-          <div class="score-row" style="margin-top:12px">
-            <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
-            <span>🔥 ${state.currentStreak}</span>
+          <button id="equation-start" class="btn btn-primary btn-block" style="max-width:200px">Start Practice</button>
+          <div class="score-row" style="margin-top:16px">
+            <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
+            <span>🔥 ${state.currentStreak} streak</span>
           </div>
         </div>
       `;
@@ -42,19 +42,11 @@ window.ChemEquation = (function() {
 
   function updateLevelBadge() {
     let badge = document.getElementById('equation-level');
-    if (badge) badge.textContent = 'Level ' + (currentReaction?.difficulty || 1);
+    if (badge) badge.textContent = currentReaction ? 'Level ' + currentReaction.difficulty : 'Level 1';
   }
 
   function getAvailableReactions() {
     return ChemData.getReactionsForDifficulty(2); // up to difficulty 2 for now
-  }
-
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
   }
 
   function generateQuestion() {
@@ -107,7 +99,7 @@ window.ChemEquation = (function() {
 
     // Pick distractors from the reaction's distractor list
     let distractors = distractorPool.filter(d => !correctFormulas.includes(d));
-    shuffle(distractors);
+    ChemData.shuffle(distractors);
     distractors = distractors.slice(0, 4);
     // Also add some common ones if not enough
     let fallbacks = ['H2O','CO2','NaCl','HCl','NaOH','O2','H2','Cl2','NH3','CaCO3']
@@ -117,12 +109,13 @@ window.ChemEquation = (function() {
     }
 
     let allTokens = [...correctFormulas, ...distractors];
-    shuffle(allTokens);
+    ChemData.shuffle(allTokens);
     tokenBank = allTokens.map(f => ({ formula: f, used: false }));
   }
 
   function renderQuestion(el) {
     if (!currentReaction) return;
+    updateLevelBadge();
 
     let word = currentReaction.words[Math.floor(Math.random() * currentReaction.words.length)];
     let eq = currentReaction.equation;
@@ -171,7 +164,7 @@ window.ChemEquation = (function() {
       <div id="equation-feedback" class="feedback"></div>
 
       <div class="score-row">
-        <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
+        <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
         <span>🔥 ${state.currentStreak}</span>
       </div>
       <div class="action-bar">
@@ -255,24 +248,20 @@ window.ChemEquation = (function() {
     let time = Date.now() - questionStartTime;
     let correct = true;
 
-    // Check each fillable slot
+    // Check each fillable slot (formula correctness only, not coefficients)
     slots.forEach(s => {
       let expectedFormula;
-      let expectedCoeff;
       if (s.type === 'reactant') {
         let idx = slots.filter(x => x.type === 'reactant').indexOf(s);
         expectedFormula = currentReaction.equation.reactants[idx]?.formula;
-        expectedCoeff = currentReaction.equation.reactants[idx]?.count;
       } else {
         let idx = slots.filter(x => x.type === 'product').indexOf(s);
         expectedFormula = currentReaction.equation.products[idx]?.formula;
-        expectedCoeff = currentReaction.equation.products[idx]?.count;
       }
 
       let formulaCorrect = s.filled && ChemParser.normalizeCase(s.formula) === ChemParser.normalizeCase(expectedFormula);
-      let coeffCorrect = s.coeff === expectedCoeff;
 
-      if (!formulaCorrect || !coeffCorrect) {
+      if (!formulaCorrect) {
         correct = false;
         s.wrong = true;
       } else {
@@ -285,7 +274,7 @@ window.ChemEquation = (function() {
     fb.className = 'feedback show ' + (correct ? 'correct' : 'wrong');
 
     if (correct) {
-      fb.innerHTML = '✅ Correct! The equation is balanced.';
+      fb.innerHTML = '✅ Correct!';
     } else {
       let expected = buildEquationString();
       fb.innerHTML = '❌ Not quite.<br><span class="answer-reveal">Expected: ' + expected + '</span>';

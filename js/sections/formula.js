@@ -30,12 +30,12 @@ window.ChemFormula = (function() {
       el.innerHTML = `
         <div class="empty-state">
           <div class="icon">✏️</div>
+          <p style="font-weight:600;color:var(--text);margin-bottom:4px">Formula Writing</p>
           <p>Practice writing chemical formulas from names.<br>Level ${level}</p>
-          <br>
-          <button id="formula-start" class="btn btn-primary btn-block">Start Practice</button>
-          <div class="score-row" style="margin-top:12px">
-            <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
-            <span>🔥 ${state.currentStreak}</span>
+          <button id="formula-start" class="btn btn-primary btn-block" style="max-width:200px">Start Practice</button>
+          <div class="score-row" style="margin-top:16px">
+            <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
+            <span>🔥 ${state.currentStreak} streak</span>
           </div>
         </div>
       `;
@@ -53,14 +53,6 @@ window.ChemFormula = (function() {
 
   function getAvailableCompounds() {
     return ChemData.getCompoundsForLevel(level);
-  }
-
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
   }
 
   function generateQuestion() {
@@ -84,7 +76,7 @@ window.ChemFormula = (function() {
   function generateMcqOptions() {
     let available = getAvailableCompounds();
     let wrongPool = available.filter(c => c.id !== currentCompound.id && c.formula !== currentCompound.formula);
-    shuffle(wrongPool);
+    ChemData.shuffle(wrongPool);
     let wrong = wrongPool.slice(0, 3);
     while (wrong.length < 3) {
       // Generate fake formula
@@ -97,7 +89,7 @@ window.ChemFormula = (function() {
       wrong.push({ formula: fake, name: '?' });
     }
     let all = [{ formula: currentCompound.formula, id: currentCompound.id }, ...wrong];
-    shuffle(all);
+    ChemData.shuffle(all);
     mcqOptions = all;
     mcqCorrect = all.findIndex(o => o.id === currentCompound.id);
   }
@@ -125,7 +117,7 @@ window.ChemFormula = (function() {
           <button class="key action" data-key="clear">Clear</button>
         </div>
         <div class="score-row">
-          <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
+          <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
           <span>🔥 ${state.currentStreak}</span>
         </div>
         <div class="action-bar">
@@ -151,7 +143,7 @@ window.ChemFormula = (function() {
           <div id="formula-feedback" class="feedback"></div>
         </div>
         <div class="score-row">
-          <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
+          <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
           <span>🔥 ${state.currentStreak}</span>
         </div>
         <div class="action-bar">
@@ -199,14 +191,18 @@ window.ChemFormula = (function() {
         let cursor = input.selectionStart;
         if (cursor === null) cursor = input.value.length;
         if (k === 'backspace') {
-          input.value = input.value.slice(0, -1);
+          if (cursor > 0) {
+            input.value = input.value.slice(0, cursor - 1) + input.value.slice(cursor);
+            cursor--;
+          }
         } else if (k === 'clear') {
           input.value = '';
+          cursor = 0;
         } else {
           input.value = input.value.slice(0, cursor) + k + input.value.slice(cursor);
-          let newPos = cursor + k.length;
-          setTimeout(() => input.setSelectionRange(newPos, newPos), 0);
+          cursor += k.length;
         }
+        input.setSelectionRange(cursor, cursor);
         input.dispatchEvent(new Event('input'));
         input.focus();
       });

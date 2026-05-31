@@ -415,8 +415,16 @@ window.ChemData = (function() {
     return IONS.filter(ion => ion.level <= level);
   }
 
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
   return {
     IONS, getIon, generateCompounds, getCompoundsForLevel,
-    REACTIONS, getReactionsForDifficulty, getIonsForLevel
+    REACTIONS, getReactionsForDifficulty, getIonsForLevel, shuffle
   };
 })();

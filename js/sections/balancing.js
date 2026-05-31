@@ -21,12 +21,12 @@ window.ChemBalancing = (function() {
       el.innerHTML = `
         <div class="empty-state">
           <div class="icon">⚖️</div>
+          <p style="font-weight:600;color:var(--text);margin-bottom:4px">Balancing Equations</p>
           <p>Balance chemical equations by entering the correct coefficients.<br>Atom count visualization included.</p>
-          <br>
-          <button id="balancing-start" class="btn btn-primary btn-block">Start Practice</button>
-          <div class="score-row" style="margin-top:12px">
-            <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
-            <span>🔥 ${state.currentStreak}</span>
+          <button id="balancing-start" class="btn btn-primary btn-block" style="max-width:200px">Start Practice</button>
+          <div class="score-row" style="margin-top:16px">
+            <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
+            <span>🔥 ${state.currentStreak} streak</span>
           </div>
         </div>
       `;
@@ -184,7 +184,7 @@ window.ChemBalancing = (function() {
         <div id="balancing-feedback" class="feedback"></div>
       </div>
       <div class="score-row">
-        <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
+        <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
         <span>🔥 ${state.currentStreak}</span>
       </div>
       <div class="action-bar">
@@ -220,93 +220,53 @@ window.ChemBalancing = (function() {
 
   function renderEquationArea() {
     if (answered) return;
-    let area = document.getElementById('balance-equation-area');
-    if (!area) return;
-
     let eq = currentReaction.equation;
+    let atomCountsEl = document.getElementById('atom-counts');
+    if (!atomCountsEl) return;
+
     let coeffs = {};
     document.querySelectorAll('.balance-coeff').forEach(inp => {
       coeffs[inp.dataset.idx] = parseInt(inp.value) || 1;
     });
 
-    let renderSide = (items, startIdx) => {
-      return items.map((item, i) => {
-        let idx = startIdx + i;
-        let val = coeffs[idx] || 1;
-        return `
-          <span>
-            <input type="number" class="balance-coeff" data-idx="${idx}" value="${val}" min="1" max="9">
-            <span class="balance-formula">${item.formula}</span>
-          </span>
-        `;
-      }).join('<span class="balance-plus"> + </span>');
-    };
-
-    if (showAtomCounts) {
-      let allElements = new Set();
-      let reactantCounts = {};
-      let productCounts = {};
-
-      eq.reactants.forEach((r, i) => {
-        let coeff = coeffs[i] || 1;
-        let counts = getElementCounts(r.formula, coeff);
-        for (let el in counts) { allElements.add(el); reactantCounts[el] = (reactantCounts[el]||0) + counts[el]; }
-      });
-      eq.products.forEach((p, i) => {
-        let coeff = coeffs[eq.reactants.length + i] || 1;
-        let counts = getElementCounts(p.formula, coeff);
-        for (let el in counts) { allElements.add(el); productCounts[el] = (productCounts[el]||0) + counts[el]; }
-      });
-
-      let atomBars = Array.from(allElements).map(el => {
-        let rVal = reactantCounts[el] || 0;
-        let pVal = productCounts[el] || 0;
-        let maxVal = Math.max(rVal, pVal, 1);
-        let balanced = rVal === pVal;
-        return `
-          <div class="atom-bar">
-            <span class="atom-label">${el}</span>
-            <div class="atom-track">
-              <div class="atom-fill lhs" style="width:${(rVal/maxVal)*50}%;left:0"></div>
-              <div class="atom-fill rhs" style="width:${(pVal/maxVal)*50}%;right:0"></div>
-            </div>
-            <span class="atom-values ${balanced?'balanced':'unbalanced'}">${rVal} : ${pVal}</span>
-          </div>
-        `;
-      }).join('');
-
-      area.innerHTML = `
-        <div class="balance-equation">
-          <div class="balance-row">
-            ${renderSide(eq.reactants, 0)}
-            <span class="balance-arrow">→</span>
-            ${renderSide(eq.products, eq.reactants.length)}
-          </div>
-          <div class="atom-counts">${atomBars}</div>
-        </div>
-      `;
-    } else {
-      area.innerHTML = `
-        <div class="balance-equation">
-          <div class="balance-row">
-            ${renderSide(eq.reactants, 0)}
-            <span class="balance-arrow">→</span>
-            ${renderSide(eq.products, eq.reactants.length)}
-          </div>
-        </div>
-      `;
+    if (!showAtomCounts) {
+      atomCountsEl.innerHTML = '';
+      return;
     }
 
-    // Re-attach listeners
-    document.querySelectorAll('.balance-coeff').forEach(inp => {
-      inp.addEventListener('input', function() {
-        if (answered) return;
-        let val = parseInt(this.value) || 1;
-        val = Math.max(1, Math.min(9, val));
-        this.value = val;
-        renderEquationArea();
-      });
+    let allElements = new Set();
+    let reactantCounts = {};
+    let productCounts = {};
+
+    eq.reactants.forEach((r, i) => {
+      let coeff = coeffs[i] || 1;
+      let counts = getElementCounts(r.formula, coeff);
+      for (let el in counts) { allElements.add(el); reactantCounts[el] = (reactantCounts[el]||0) + counts[el]; }
     });
+    eq.products.forEach((p, i) => {
+      let coeff = coeffs[eq.reactants.length + i] || 1;
+      let counts = getElementCounts(p.formula, coeff);
+      for (let el in counts) { allElements.add(el); productCounts[el] = (productCounts[el]||0) + counts[el]; }
+    });
+
+    let atomBars = Array.from(allElements).map(el => {
+      let rVal = reactantCounts[el] || 0;
+      let pVal = productCounts[el] || 0;
+      let maxVal = Math.max(rVal, pVal, 1);
+      let balanced = rVal === pVal;
+      return `
+        <div class="atom-bar">
+          <span class="atom-label">${el}</span>
+          <div class="atom-track">
+            <div class="atom-fill lhs" style="width:${(rVal/maxVal)*50}%;left:0"></div>
+            <div class="atom-fill rhs" style="width:${(pVal/maxVal)*50}%;right:0"></div>
+          </div>
+          <span class="atom-values ${balanced?'balanced':'unbalanced'}">${rVal} : ${pVal}</span>
+        </div>
+      `;
+    }).join('');
+
+    atomCountsEl.innerHTML = atomBars;
   }
 
   function checkAnswer() {

@@ -26,12 +26,12 @@ window.ChemValency = (function() {
       el.innerHTML = `
         <div class="empty-state">
           <div class="icon">⚛️</div>
+          <p style="font-weight:600;color:var(--text);margin-bottom:4px">Valency Mastery</p>
           <p>Master the valencies of common ions.<br>Level ${level}: ${getLevelName(level)}</p>
-          <br>
-          <button id="valency-start" class="btn btn-primary btn-block">Start Quiz</button>
-          <div class="score-row" style="margin-top:12px">
-            <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
-            <span>🔥 ${state.currentStreak}</span>
+          <button id="valency-start" class="btn btn-primary btn-block" style="max-width:200px">Start Quiz</button>
+          <div class="score-row" style="margin-top:16px">
+            <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
+            <span>🔥 ${state.currentStreak} streak</span>
           </div>
         </div>
       `;
@@ -63,14 +63,6 @@ window.ChemValency = (function() {
     return all; // For level 3, include variable valency
   }
 
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
   function generateQuestion() {
     let available = getAvailableIons();
     if (available.length === 0) return;
@@ -85,7 +77,7 @@ window.ChemValency = (function() {
     // Generate options
     let correctAnswer = currentIon.charge;
     let wrongPool = available.filter(ion => ion.id !== currentIon.id && ion.charge !== correctAnswer);
-    shuffle(wrongPool);
+    ChemData.shuffle(wrongPool);
 
     let wrongOptions = wrongPool.slice(0, 3);
     // If not enough wrong options, generate some fake ones
@@ -98,7 +90,7 @@ window.ChemValency = (function() {
     }
 
     options = [currentIon, ...wrongOptions];
-    shuffle(options);
+    ChemData.shuffle(options);
     correctIndex = options.indexOf(currentIon);
   }
 
@@ -128,9 +120,9 @@ window.ChemValency = (function() {
         <div id="valency-feedback" class="feedback"></div>
       </div>
       <div class="score-row">
-        <span>🎯 ${state.totalCorrect}/${state.totalAnswered}</span>
+        <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
         <span>🔥 ${state.currentStreak}</span>
-        <span>⚡ ${level > 1 ? 'Lv' + level : ''}</span>
+        <span>Lv${level}</span>
       </div>
       <div class="action-bar">
         <button id="valency-stop" class="btn btn-danger">Stop Session</button>

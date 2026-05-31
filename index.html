@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ChemMaster - JEE Foundation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <h1 id="title">⚗️ ChemMaster</h1>
+      <button id="progressBtn" class="header-btn" aria-label="Progress">📊</button>
+    </header>
+
+    <main id="main">
+      <div id="section-valency" class="section active">
+        <div class="section-header">
+          <h2>Valency Mastery</h2>
+          <div class="level-badge" id="valency-level">Level 1</div>
+        </div>
+        <div id="valency-content" class="section-content"></div>
+      </div>
+
+      <div id="section-formula" class="section">
+        <div class="section-header">
+          <h2>Formula Writing</h2>
+          <div class="level-badge" id="formula-level">Level 1</div>
+        </div>
+        <div id="formula-content" class="section-content"></div>
+      </div>
+
+      <div id="section-equation" class="section">
+        <div class="section-header">
+          <h2>Equation Writing</h2>
+          <div class="level-badge" id="equation-level">Level 1</div>
+        </div>
+        <div id="equation-content" class="section-content"></div>
+      </div>
+
+      <div id="section-balancing" class="section">
+        <div class="section-header">
+          <h2>Balancing Equations</h2>
+          <div class="level-badge" id="balancing-level">Level 1</div>
+        </div>
+        <div id="balancing-content" class="section-content"></div>
+      </div>
+    </main>
+
+    <nav id="bottom-nav">
+      <button class="nav-btn active" data-section="valency" aria-label="Valency">
+        <span class="nav-icon">⚛</span>
+        <span class="nav-label">Valency</span>
+      </button>
+      <button class="nav-btn" data-section="formula" aria-label="Formula">
+        <span class="nav-icon">✏️</span>
+        <span class="nav-label">Formula</span>
+      </button>
+      <button class="nav-btn" data-section="equation" aria-label="Equation">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Equation</span>
+      </button>
+      <button class="nav-btn" data-section="balancing" aria-label="Balance">
+        <span class="nav-icon">⚖️</span>
+        <span class="nav-label">Balance</span>
+      </button>
+      <button id="nav-progress" class="nav-btn" aria-label="Progress">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">Progress</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="progress-panel" class="slide-panel">
+    <div class="panel-header">
+      <h2>Progress</h2>
+      <button id="close-panel" class="header-btn">&times;</button>
+    </div>
+    <div class="panel-content">
+      <div class="chart-container">
+        <canvas id="progress-chart"></canvas>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="stat-value" id="stat-total">0</span><span class="stat-label">Total Qs</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-correct">0</span><span class="stat-label">Correct</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Best Streak</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-mastery">0%</span><span class="stat-label">Mastery</span></div>
+      </div>
+      <div id="weak-areas" class="weak-areas">
+        <h3>Needs Practice</h3>
+        <ul id="weak-list"></ul>
+      </div>
+    </div>
+  </div>
+  <div id="panel-overlay" class="panel-overlay"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/formula-parser.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/sections/valency.js"></script>
+  <script src="js/sections/formula.js"></script>
+  <script src="js/sections/equation.js"></script>
+  <script src="js/sections/balancing.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

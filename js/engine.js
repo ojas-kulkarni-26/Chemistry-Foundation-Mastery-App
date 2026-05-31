@@ -11,7 +11,8 @@ window.ChemEngine = (function() {
       bestStreak: 0,
       currentStreak: 0,
       totalAnswered: 0,
-      totalCorrect: 0
+      totalCorrect: 0,
+      valencyLevel: 1
     };
   }
 

@@ -43,7 +43,7 @@ window.ChemBalancing = (function() {
   }
 
   function getAvailableReactions() {
-    return ChemData.getReactionsForDifficulty(2);
+    return ChemData.getReactionsForDifficulty(3);
   }
 
   function generateQuestion() {

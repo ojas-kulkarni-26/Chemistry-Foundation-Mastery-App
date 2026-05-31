@@ -2,7 +2,7 @@
 window.ChemValency = (function() {
 
   let currentIon = null;
-  let currentDirection = null; // 'ion_to_valency' or 'valency_to_ion'
+  let currentDirection = null;
   let options = [];
   let correctIndex = -1;
   let answered = false;
@@ -15,6 +15,7 @@ window.ChemValency = (function() {
 
   function init() {
     state = ChemEngine.load();
+    level = state.valencyLevel || 1;
     render();
   }
 
@@ -27,7 +28,12 @@ window.ChemValency = (function() {
         <div class="empty-state">
           <div class="icon">⚛️</div>
           <p style="font-weight:600;color:var(--text);margin-bottom:4px">Valency Mastery</p>
-          <p>Master the valencies of common ions.<br>Level ${level}: ${getLevelName(level)}</p>
+          <p>Master the valencies of common ions.</p>
+          <div class="level-selector" style="display:flex;gap:8px;margin:16px 0">
+            ${[1,2,3].map(l => `
+              <button class="level-btn ${l === level ? 'active' : ''}" data-level="${l}" style="flex:1;padding:10px 16px;border:2px solid ${l === level ? 'var(--primary)' : 'var(--border)'};border-radius:var(--radius-sm);background:${l === level ? 'rgba(108,92,231,0.08)' : 'var(--card-bg)'};color:${l === level ? 'var(--primary)' : 'var(--text)'};font-weight:600;font-size:0.85rem;transition:all 0.2s;cursor:pointer">${getLevelName(l)}</button>
+            `).join('')}
+          </div>
           <button id="valency-start" class="btn btn-primary btn-block" style="max-width:200px">Start Quiz</button>
           <div class="score-row" style="margin-top:16px">
             <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
@@ -35,6 +41,17 @@ window.ChemValency = (function() {
           </div>
         </div>
       `;
+      document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          let newLevel = parseInt(this.dataset.level);
+          if (newLevel !== level) {
+            level = newLevel;
+            state.valencyLevel = level;
+            ChemEngine.save(state);
+            render();
+          }
+        });
+      });
       document.getElementById('valency-start')?.addEventListener('click', startSession);
       updateLevelBadge();
       return;
@@ -44,9 +61,9 @@ window.ChemValency = (function() {
 
   function getLevelName(lvl) {
     switch(lvl) {
-      case 1: return 'Monoatomic Ions';
-      case 2: return 'Polyatomic Ions';
-      case 3: return 'Variable Valency';
+      case 1: return 'Monoatomic';
+      case 2: return 'Polyatomic';
+      case 3: return 'Variable';
       default: return 'Mastered!';
     }
   }
@@ -57,30 +74,24 @@ window.ChemValency = (function() {
   }
 
   function getAvailableIons() {
-    let all = ChemData.getIonsForLevel(level);
-    // Only include unique symbol+charge combos for level 1 and 2
-    if (level <= 2) return all;
-    return all; // For level 3, include variable valency
+    return ChemData.getIonsForLevel(level);
   }
 
   function generateQuestion() {
     let available = getAvailableIons();
     if (available.length === 0) return;
 
-    // Use engine to pick which ion to test
     currentIon = ChemEngine.selectNext(state, available);
     if (!currentIon) currentIon = available[Math.floor(Math.random() * available.length)];
 
     currentDirection = Math.random() > 0.5 ? 'ion_to_valency' : 'valency_to_ion';
     answered = false;
 
-    // Generate options
     let correctAnswer = currentIon.charge;
     let wrongPool = available.filter(ion => ion.id !== currentIon.id && ion.charge !== correctAnswer);
     ChemData.shuffle(wrongPool);
 
     let wrongOptions = wrongPool.slice(0, 3);
-    // If not enough wrong options, generate some fake ones
     while (wrongOptions.length < 3) {
       let fakeCharge;
       do {
@@ -129,7 +140,6 @@ window.ChemValency = (function() {
       </div>
     `;
 
-    // Add event listeners
     document.querySelectorAll('#valency-options .option-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         if (answered) return;
@@ -161,16 +171,13 @@ window.ChemValency = (function() {
     let time = Date.now() - questionStartTime;
     let correct = index === correctIndex;
 
-    // Disable all buttons
     document.querySelectorAll('#valency-options .option-btn').forEach(btn => btn.disabled = true);
 
-    // Highlight correct/wrong
     document.querySelectorAll('#valency-options .option-btn').forEach((btn, i) => {
       if (i === correctIndex) btn.classList.add('correct');
       else if (i === index && !correct) btn.classList.add('wrong');
     });
 
-    // Show feedback
     let fb = document.getElementById('valency-feedback');
     if (fb) {
       let chargeStr = currentIon.charge > 0 ? '+' + currentIon.charge : currentIon.charge;
@@ -180,17 +187,14 @@ window.ChemValency = (function() {
         : '❌ Incorrect! <span class="answer-reveal">' + getIonDisplayNameStatic(currentIon, false) + ' has valency ' + chargeStr + '</span>';
     }
 
-    // Record in engine
     state = ChemEngine.recordAnswer(state, currentIon.id, correct, time, 'valency');
 
-    // Track consecutive correct for level advancement
     if (correct) {
       consecutiveLevelCorrect++;
     } else {
       consecutiveLevelCorrect = 0;
     }
 
-    // Auto-advance to next question after delay
     setTimeout(() => {
       if (!sessionRunning) return;
       generateQuestion();
@@ -201,6 +205,8 @@ window.ChemValency = (function() {
   function startSession() {
     sessionRunning = true;
     state = ChemEngine.load();
+    state.valencyLevel = level;
+    ChemEngine.save(state);
     consecutiveLevelCorrect = 0;
     generateQuestion();
     render();
@@ -208,14 +214,14 @@ window.ChemValency = (function() {
 
   function stopSession() {
     sessionRunning = false;
-    // Check if should advance level
     checkLevelAdvance();
+    state.valencyLevel = level;
+    ChemEngine.save(state);
     render();
   }
 
   function checkLevelAdvance() {
     if (level >= 3) return;
-    // Need 80%+ accuracy on current level to advance
     let levelIons = ChemData.getIonsForLevel(level);
     if (levelIons.length === 0) return;
     let correct = 0, total = 0;
@@ -228,7 +234,6 @@ window.ChemValency = (function() {
     });
     if (total >= 5 && (correct / total) >= 0.7) {
       level++;
-      updateLevelBadge();
     }
   }
 

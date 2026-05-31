@@ -46,7 +46,7 @@ window.ChemEquation = (function() {
   }
 
   function getAvailableReactions() {
-    return ChemData.getReactionsForDifficulty(2); // up to difficulty 2 for now
+    return ChemData.getReactionsForDifficulty(3);
   }
 
   function generateQuestion() {

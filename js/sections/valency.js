@@ -30,7 +30,7 @@ window.ChemValency = (function() {
           <p style="font-weight:600;color:var(--text);margin-bottom:4px">Valency Mastery</p>
           <p>Master the valencies of common ions.</p>
           <div class="level-selector" style="display:flex;gap:8px;margin:16px 0">
-            ${[1,2,3].map(l => `
+            ${[1,2,3,4].map(l => `
               <button class="level-btn ${l === level ? 'active' : ''}" data-level="${l}" style="flex:1;padding:10px 16px;border:2px solid ${l === level ? 'var(--primary)' : 'var(--border)'};border-radius:var(--radius-sm);background:${l === level ? 'rgba(108,92,231,0.08)' : 'var(--card-bg)'};color:${l === level ? 'var(--primary)' : 'var(--text)'};font-weight:600;font-size:0.85rem;transition:all 0.2s;cursor:pointer">${getLevelName(l)}</button>
             `).join('')}
           </div>
@@ -64,6 +64,7 @@ window.ChemValency = (function() {
       case 1: return 'Monoatomic';
       case 2: return 'Polyatomic';
       case 3: return 'Variable';
+      case 4: return 'Mixed';
       default: return 'Mastered!';
     }
   }
@@ -74,6 +75,7 @@ window.ChemValency = (function() {
   }
 
   function getAvailableIons() {
+    if (level >= 4) return ChemData.IONS;
     return ChemData.getIonsForLevel(level);
   }
 
@@ -221,7 +223,7 @@ window.ChemValency = (function() {
   }
 
   function checkLevelAdvance() {
-    if (level >= 3) return;
+    if (level >= 4) return;
     let levelIons = ChemData.getIonsForLevel(level);
     if (levelIons.length === 0) return;
     let correct = 0, total = 0;

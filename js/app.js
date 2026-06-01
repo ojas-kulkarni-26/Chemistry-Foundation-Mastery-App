@@ -14,6 +14,7 @@
     ChemFormula.init();
     ChemEquation.init();
     ChemBalancing.init();
+    ChemSymbols.init();
 
     // Navigation
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -60,6 +61,7 @@
       case 'formula': ChemFormula.render(); break;
       case 'equation': ChemEquation.render(); break;
       case 'balancing': ChemBalancing.render(); break;
+      case 'symbols': ChemSymbols.render(); break;
     }
   }
 

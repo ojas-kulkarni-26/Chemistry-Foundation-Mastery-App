@@ -39,12 +39,16 @@ window.ChemSymbols = (function() {
   let state = null;
 
   function getPool() {
+    // Ions: use clean name without embedding the symbol
     let ions = ChemData.IONS.map(ion => ({
-      name: ion.name + (ion.charge > 0 ? ' (' + ion.symbol + (ion.charge > 0 ? '+' : '') + ')' : ''),
+      name: ion.name,
       symbol: ion.symbol,
       id: ion.id
     }));
-    return [...ELEMENTS, ...ions];
+    // Elements: skip any whose symbol is already covered by an ion
+    let ionSymbols = new Set(ions.map(i => i.symbol));
+    let elems = ELEMENTS.filter(e => !ionSymbols.has(e.symbol));
+    return [...ions, ...elems];
   }
 
   function init() {

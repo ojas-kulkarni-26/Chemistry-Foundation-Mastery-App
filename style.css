@@ -224,6 +224,27 @@ input { font-family: inherit; font-size: inherit; }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
+/* === Cheatsheet === */
+.cheat-section { background: var(--card-bg); border-radius: var(--radius); margin-bottom: 8px; box-shadow: var(--shadow); overflow: hidden; }
+.cheat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; user-select: none; transition: background 0.2s; font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.cheat-header:hover { background: rgba(108,92,231,0.04); }
+.cheat-header .cheat-arrow { font-size: 0.7rem; color: var(--text-light); transition: transform 0.2s; }
+.cheat-header.open .cheat-arrow { transform: rotate(90deg); }
+.cheat-body { padding: 0 16px 12px; display: none; }
+.cheat-body.open { display: block; }
+.cheat-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.cheat-table th { text-align: left; padding: 6px 8px; font-weight: 600; color: var(--text-light); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); }
+.cheat-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.cheat-table tr:last-child td { border-bottom: none; }
+.cheat-table .charge { font-weight: 600; font-family: 'Courier New', monospace; }
+.cheat-table .charge.pos { color: var(--danger); }
+.cheat-table .charge.neg { color: var(--accent); }
+.cheat-table .formula { font-family: 'Courier New', monospace; font-weight: 600; }
+.cheat-reaction { padding: 8px 0; }
+.cheat-reaction .rxn-type { font-weight: 600; color: var(--primary); font-size: 0.85rem; }
+.cheat-reaction .rxn-example { font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+.cheat-reaction .rxn-desc { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
+
 /* === Keyboard Focus === */
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .btn:focus-visible, .nav-btn:focus-visible, .option-btn:focus-visible, .token-chip:focus-visible { outline-offset: 2px; }

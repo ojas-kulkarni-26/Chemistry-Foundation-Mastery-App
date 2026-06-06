@@ -132,7 +132,7 @@ window.ChemEquation = (function() {
           <div class="slot ${isFilled ? 'filled' : ''} ${s.wrong ? 'wrong' : ''} ${s.correct ? 'correct' : ''}" data-slot="${i}">
             ${displayFormula}
           </div>
-          <input type="number" class="coeff-input" data-slot="${i}" value="${s.coeff}" min="1" max="9" ${answered ? 'disabled' : ''}>
+          <input type="text" inputmode="numeric" class="coeff-input" data-slot="${i}" value="${s.coeff}" ${answered ? 'disabled' : ''}>
         </div>
       `;
     };
@@ -248,26 +248,44 @@ window.ChemEquation = (function() {
     let time = Date.now() - questionStartTime;
     let correct = true;
 
-    // Check each fillable slot (formula correctness only, not coefficients)
+    // Build expected and actual formula sets per side (order-independent)
+    let checkSide = (type) => {
+      let expected = currentReaction.equation[type === 'reactant' ? 'reactants' : 'products']
+        .map(r => ChemParser.normalizeCase(r.formula));
+      let actual = slots
+        .filter(s => s.type === type && s.filled)
+        .map(s => ChemParser.normalizeCase(s.formula));
+      // Compare as multisets
+      let expectedSorted = [...expected].sort();
+      let actualSorted = [...actual].sort();
+      return expectedSorted.length === actualSorted.length &&
+             expectedSorted.every((f, i) => f === actualSorted[i]);
+    };
+
+    // Mark each slot correct/wrong based on whether its formula is needed
+    let correctFormulas = {};
+    [...currentReaction.equation.reactants, ...currentReaction.equation.products]
+      .forEach(r => {
+        let f = ChemParser.normalizeCase(r.formula);
+        correctFormulas[f] = (correctFormulas[f] || 0) + 1;
+      });
+
     slots.forEach(s => {
-      let expectedFormula;
-      if (s.type === 'reactant') {
-        let idx = slots.filter(x => x.type === 'reactant').indexOf(s);
-        expectedFormula = currentReaction.equation.reactants[idx]?.formula;
-      } else {
-        let idx = slots.filter(x => x.type === 'product').indexOf(s);
-        expectedFormula = currentReaction.equation.products[idx]?.formula;
-      }
-
-      let formulaCorrect = s.filled && ChemParser.normalizeCase(s.formula) === ChemParser.normalizeCase(expectedFormula);
-
-      if (!formulaCorrect) {
-        correct = false;
-        s.wrong = true;
-      } else {
+      if (!s.filled) { s.wrong = true; correct = false; return; }
+      let f = ChemParser.normalizeCase(s.formula);
+      if (correctFormulas[f] && correctFormulas[f] > 0) {
         s.correct = true;
+        correctFormulas[f]--;
+      } else {
+        s.wrong = true;
+        correct = false;
       }
     });
+
+    // Also check count correctness per side
+    let reactantsOk = checkSide('reactant');
+    let productsOk = checkSide('product');
+    if (!reactantsOk || !productsOk) correct = false;
 
     // Show feedback
     let fb = document.getElementById('equation-feedback');

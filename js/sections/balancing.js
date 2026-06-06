@@ -101,7 +101,7 @@ window.ChemBalancing = (function() {
           let val = coeffs[idx] || 1;
           return `
             <span>
-              <input type="number" class="balance-coeff" data-idx="${idx}" value="${val}" min="1" max="9" ${answered ? 'disabled' : ''}>
+              <input type="text" inputmode="numeric" class="balance-coeff" data-idx="${idx}" value="${val}" ${answered ? 'disabled' : ''}>
               <span class="balance-formula">${item.formula}</span>
             </span>
           `;
@@ -204,10 +204,8 @@ window.ChemBalancing = (function() {
     document.querySelectorAll('.balance-coeff').forEach(inp => {
       inp.addEventListener('input', function() {
         if (answered) return;
-        let val = parseInt(this.value) || 1;
-        val = Math.max(1, Math.min(9, val));
-        this.value = val;
-        // Re-render the equation area with updated counts
+        // Strip non-digits and clamp length
+        this.value = this.value.replace(/\D/g, '').slice(0, 2);
         renderEquationArea();
       });
     });

@@ -116,6 +116,34 @@
     document.getElementById('stat-correct').textContent = stats.correct;
     document.getElementById('stat-streak').textContent = stats.bestStreak;
     document.getElementById('stat-mastery').textContent = stats.accuracy + '%';
+
+    // Per-section breakdown
+    let sectionDiv = document.getElementById('section-stats');
+    if (!sectionDiv) return;
+    let sections = [
+      { key:'valency', icon:'⚛️', name:'Valency' },
+      { key:'formula', icon:'✏️', name:'Formula' },
+      { key:'equation', icon:'⚡', name:'Equation' },
+      { key:'balancing', icon:'⚖️', name:'Balance' },
+      { key:'symbols', icon:'🔤', name:'Symbols' }
+    ];
+    let html = '';
+    sections.forEach(sec => {
+      let filtered = state.history.filter(h => h.section === sec.key);
+      let total = filtered.length;
+      let correct = filtered.filter(h => h.correct).length;
+      let pct = total > 0 ? Math.round(correct / total * 100) : 0;
+      let cls = pct >= 75 ? 'good' : pct >= 40 ? 'ok' : 'bad';
+      let barW = total > 0 ? pct : 0;
+      html += `
+        <div class="sec-stat">
+          <span class="sec-icon">${sec.icon}</span>
+          <span class="sec-name">${sec.name}</span>
+          <div class="sec-bar"><div class="sec-fill ${cls}" style="width:${barW}%"></div></div>
+          <span class="sec-pct">${total > 0 ? pct + '%' : '—'}</span>
+        </div>`;
+    });
+    sectionDiv.innerHTML = html;
   }
 
   // Initialize on DOM ready

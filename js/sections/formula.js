@@ -19,6 +19,7 @@ window.ChemFormula = (function() {
 
   function init() {
     state = ChemEngine.load();
+    level = state.formulaLevel || 1;
     render();
   }
 
@@ -27,11 +28,21 @@ window.ChemFormula = (function() {
     if (!el) return;
     el.innerHTML = '';
     if (!sessionRunning) {
+      let levelLabels = ['', 'Monoatomic', 'Polyatomic', 'Variable/Various', 'All Ions'];
+      let maxLevel = 4;
       el.innerHTML = `
         <div class="empty-state">
           <div class="icon">✏️</div>
           <p style="font-weight:600;color:var(--text);margin-bottom:4px">Formula Writing</p>
-          <p>Practice writing chemical formulas from names.<br>Level ${level}</p>
+          <p>Practice writing chemical formulas from names.</p>
+          <div class="level-picker" style="margin:12px 0">
+            <label style="font-size:0.8rem;color:var(--text-light);display:block;margin-bottom:6px">Choose Level:</label>
+            <div class="level-btns">
+              ${[1,2,3,4].map(l => `
+                <button class="level-btn ${l === level ? 'active' : ''}" data-level="${l}">${levelLabels[l]}</button>
+              `).join('')}
+            </div>
+          </div>
           <button id="formula-start" class="btn btn-primary btn-block" style="max-width:200px">Start Practice</button>
           <div class="score-row" style="margin-top:16px">
             <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
@@ -39,6 +50,14 @@ window.ChemFormula = (function() {
           </div>
         </div>
       `;
+      document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          level = parseInt(this.dataset.level);
+          state.formulaLevel = level;
+          ChemEngine.save(state);
+          render();
+        });
+      });
       document.getElementById('formula-start')?.addEventListener('click', startSession);
       updateLevelBadge();
       return;
@@ -324,6 +343,7 @@ window.ChemFormula = (function() {
   function startSession() {
     sessionRunning = true;
     state = ChemEngine.load();
+    level = state.formulaLevel || 1;
     questionCount = 0;
     generateQuestion();
     render();

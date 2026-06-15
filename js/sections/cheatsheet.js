@@ -43,6 +43,8 @@ window.ChemCheatsheet = (function() {
       ${section('Variable Valency Ions', varTable)}
       ${section('Common Compounds', compTable)}
       ${section('Reaction Types', rxns)}
+      ${section('Unit Conversions', unitConversionsBlock())}
+      ${section('Chemistry Formulas', chemistryFormulasBlock())}
     `;
   }
 
@@ -147,6 +149,91 @@ window.ChemCheatsheet = (function() {
         <div class="rxn-desc">${r.desc}</div>
       </div>`
     ).join('');
+  }
+
+  function siPrefixTable() {
+    let prefixes = [
+      { sym:'Y', name:'yotta', exp:24 },
+      { sym:'Z', name:'zetta', exp:21 },
+      { sym:'E', name:'exa',   exp:18 },
+      { sym:'P', name:'peta',  exp:15 },
+      { sym:'T', name:'tera',  exp:12 },
+      { sym:'G', name:'giga',  exp:9 },
+      { sym:'M', name:'mega',  exp:6 },
+      { sym:'k', name:'kilo',  exp:3 },
+      { sym:'h', name:'hecto', exp:2 },
+      { sym:'da',name:'deca',  exp:1 },
+      { sym:'d', name:'deci',  exp:-1 },
+      { sym:'c', name:'centi', exp:-2 },
+      { sym:'m', name:'milli', exp:-3 },
+      { sym:'\u03BC', name:'micro', exp:-6 },
+      { sym:'n', name:'nano',  exp:-9 },
+      { sym:'p', name:'pico',  exp:-12 },
+      { sym:'f', name:'femto', exp:-15 },
+      { sym:'a', name:'atto',  exp:-18 },
+      { sym:'z', name:'zepto', exp:-21 },
+      { sym:'y', name:'yocto', exp:-24 },
+    ];
+    var SUPER = {'0':'\u2070','1':'\u00B9','2':'\u00B2','3':'\u00B3','4':'\u2074','5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'};
+    function toSuper(n) { return Math.abs(n).toString().split('').map(function(d){return SUPER[d]}).join(''); }
+    function powStr(e) {
+      if (e === 0) return '10\u00B0';
+      if (e > 0) return '10' + toSuper(e);
+      return '10\u207b' + toSuper(e);
+    }
+    let rows = prefixes.map(p =>
+      `<tr><td class="formula" style="font-size:0.85rem">${p.sym}</td><td>${p.name}</td><td style="font-family:'Courier New',monospace;text-align:center">${powStr(p.exp)}</td><td style="font-family:'Courier New',monospace">${p.sym}m</td></tr>`
+    ).join('');
+    return `<table class="cheat-table"><tr><th>Prefix</th><th>Name</th><th>Power</th><th>Example</th></tr>${rows}</table>`;
+  }
+
+  function unitConversionsBlock() {
+    const CATS = [
+      { name:'SI Prefixes (Length)', icon:'📏', html: siPrefixTable() },
+      { name:'Mass', icon:'⚖️', conversions:['1 kg = 1000 g', '1 g = 1000 mg', '1 mg = 1000 \u03BCg', '1 kg = 2.205 lb', '1 t = 1000 kg'] },
+      { name:'Volume', icon:'\uD83E\uDDEA', conversions:['1 L = 1000 mL', '1 mL = 1 cm\u00B3', '1 L = 1 dm\u00B3', '1 m\u00B3 = 1000 L', '1 dL = 100 mL'] },
+      { name:'Temperature', icon:'\uD83C\uDF21\uFE0F', conversions:['\u00B0C = K \u2212 273.15', 'K = \u00B0C + 273.15', '\u00B0F = \u00B0C \u00D7 9/5 + 32', '\u00B0C = (\u00B0F \u2212 32) \u00D7 5/9', '0\u00B0C = 273.15 K = 32\u00B0F'] },
+      { name:'Pressure', icon:'\uD83D\uDCA8', conversions:['1 atm = 101.325 kPa', '1 atm = 760 mmHg (torr)', '1 bar = 100 kPa', '1 atm = 1.01325 bar', '1 kPa = 7.501 mmHg', '1 atm = 14.696 psi'] },
+      { name:'Energy', icon:'\u26A1', conversions:['1 J = 0.239 cal', '1 cal = 4.184 J', '1 kcal = 4.184 kJ', '1 kWh = 3600 kJ', '1 eV = 1.602\u00D710\u207b\u00B9\u2079 J'] },
+      { name:'Amount', icon:'\uD83D\uDD2C', conversions:['1 mol = 1000 mmol', '1 mol = 6.022\u00D710\u00B2\u00B3 particles', '1 kmol = 1000 mol'] },
+      { name:'Concentration', icon:'\uD83E\uDDEB', conversions:['1 M = 1000 mM', '1 mM = 1000 \u03BCM', '1% (w/v) = 1 g/100 mL', '1 ppm = 1 mg/L'] },
+    ];
+    return CATS.map(c => {
+      if (c.html) {
+        return `<div style="margin-bottom:8px">
+          <div style="font-weight:600;font-size:0.8rem;color:var(--primary);margin-bottom:4px">${c.icon} ${c.name}</div>
+          ${c.html}
+        </div>`;
+      }
+      return `<div style="margin-bottom:8px">
+        <div style="font-weight:600;font-size:0.8rem;color:var(--primary);margin-bottom:4px">${c.icon} ${c.name}</div>
+        ${c.conversions.map(conv => `<div style="font-size:0.75rem;padding:2px 0;font-family:'Courier New',monospace;color:var(--text-light)">${conv}</div>`).join('')}
+      </div>`;
+    }).join('');
+  }
+
+  function chemistryFormulasBlock() {
+    const FORMULAS = [
+      { name:'Mole Concept', formula:'n = m / M', desc:'Moles = Mass / Molar mass' },
+      { name:'Molarity', formula:'C = n / V', desc:'Concentration = Moles / Volume (L)' },
+      { name:'Dilution', formula:'C₁V₁ = C₂V₂', desc:'Initial × Initial = Final × Final' },
+      { name:'Ideal Gas Law', formula:'PV = nRT', desc:'R = 0.0821 L·atm/(mol·K)' },
+      { name:'pH', formula:'pH = −log[H⁺]', desc:'Hydrogen ion concentration' },
+      { name:'Density', formula:'ρ = m / V', desc:'Density = Mass / Volume' },
+      { name:'Avogadro\'s Number', formula:'N = n × Nₐ', desc:'Nₐ = 6.022×10²³' },
+      { name:'Heat Transfer', formula:'q = mcΔT', desc:'Heat = Mass × SHC × Temp change' },
+      { name:'Percentage Yield', formula:'% = (Actual/Theo) × 100', desc:'Efficiency of reaction' },
+      { name:'Reaction Rate', formula:'Rate = Δ[C]/Δt', desc:'Change in concentration / time' },
+      { name:'Freezing Point Depression', formula:'ΔTf = i·Kf·m', desc:'Colligative property' },
+      { name:'Percent Composition', formula:'% = (mₑ/M) × 100', desc:'Element mass / total mass' },
+    ];
+    return FORMULAS.map(f => `
+      <div style="margin-bottom:6px;padding:6px 8px;background:var(--bg);border-radius:6px">
+        <div style="font-weight:600;font-size:0.8rem;color:var(--text)">${f.name}</div>
+        <div style="font-family:'Courier New',monospace;font-size:0.85rem;color:var(--primary);margin:2px 0">${f.formula}</div>
+        <div style="font-size:0.7rem;color:var(--text-light)">${f.desc}</div>
+      </div>
+    `).join('');
   }
 
   function setupAccordion() {

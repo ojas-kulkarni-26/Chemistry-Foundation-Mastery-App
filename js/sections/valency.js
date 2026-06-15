@@ -27,17 +27,17 @@ window.ChemValency = (function() {
       el.innerHTML = `
         <div class="empty-state">
           <div class="icon">⚛️</div>
-          <p style="font-weight:600;color:var(--text);margin-bottom:4px">Valency Mastery</p>
-          <p>Master the valencies of common ions.</p>
-          <div class="level-selector" style="display:flex;gap:8px;margin:16px 0">
+          <p class="empty-title">Valency Mastery</p>
+          <p class="empty-sub">Master the valencies of common ions</p>
+          <div class="level-selector">
             ${[1,2,3,4].map(l => `
-              <button class="level-btn ${l === level ? 'active' : ''}" data-level="${l}" style="flex:1;padding:10px 16px;border:2px solid ${l === level ? 'var(--primary)' : 'var(--border)'};border-radius:var(--radius-sm);background:${l === level ? 'rgba(108,92,231,0.08)' : 'var(--card-bg)'};color:${l === level ? 'var(--primary)' : 'var(--text)'};font-weight:600;font-size:0.85rem;transition:all 0.2s;cursor:pointer">${getLevelName(l)}</button>
+              <button class="level-btn ${l === level ? 'active' : ''}" data-level="${l}">${getLevelName(l)}</button>
             `).join('')}
           </div>
-          <button id="valency-start" class="btn btn-primary btn-block" style="max-width:200px">Start Quiz</button>
-          <div class="score-row" style="margin-top:16px">
+          <button id="valency-start" class="btn btn-primary">Start Quiz</button>
+          <div class="score-row">
             <span>✓ ${state.totalCorrect}/${state.totalAnswered}</span>
-            <span>🔥 ${state.currentStreak} streak</span>
+            <span>🔥 ${state.currentStreak}</span>
           </div>
         </div>
       `;
